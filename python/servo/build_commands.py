@@ -229,8 +229,8 @@ class MachCommands(CommandBase):
 
         if target:
             if self.config["tools"]["use-rustup"]:
-                check_call("rustup" + BIN_SUFFIX, "target", "add",
-                           "--toolchain", self.toolchain(), target)
+                check_call(["rustup" + BIN_SUFFIX, "target", "add",
+                            "--toolchain", self.toolchain(), target])
 
             opts += ["--target", target]
             if not android:
