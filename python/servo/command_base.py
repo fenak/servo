@@ -319,9 +319,11 @@ class CommandBase(object):
         return self._default_toolchain
 
     def call_rustup_run(self, args, **kwargs):
+        args[0] += BIN_SUFFIX
         if self.config["tools"]["use-rustup"]:
             try:
-                version_line = subprocess.check_output(["rustup" + BIN_SUFFIX, "--version"])
+                kwargs.setdefault("env", {})["RUSTUP_TOOLCHAIN"] = self.toolchain()
+                return call(args, executable="rustup" + BIN_SUFFIX, **kwargs)
             except OSError as e:
                 if e.errno == NO_SUCH_FILE_OR_DIRECTORY:
                     print "It looks like rustup is not installed. See instructions at " \
@@ -329,15 +331,8 @@ class CommandBase(object):
                     print
                     return 1
                 raise
-            version = tuple(map(int, re.match("rustup (\d+)\.(\d+)\.(\d+)", version_line).groups()))
-            if version < (1, 8, 0):
-                print "rustup is at version %s.%s.%s, Servo requires 1.8.0 or more recent." % version
-                print "Try running 'rustup self update'."
-                return 1
-            args = ["rustup" + BIN_SUFFIX, "run", "--install", self.toolchain()] + args
         else:
-            args[0] += BIN_SUFFIX
-        return call(args, **kwargs)
+            return call(args, **kwargs)
 
     def get_top_dir(self):
         return self.context.topdir
