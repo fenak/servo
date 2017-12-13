@@ -136,7 +136,8 @@ def call(*args, **kwargs):
         kwargs['env'] = normalize_env(kwargs['env'])
     # we have to use shell=True in order to get PATH handling
     # when looking for the binary on Windows
-    return subprocess.call(*args, shell=sys.platform == 'win32', **kwargs)
+    kwargs.setdefault("shell", sys.platform == "win32")
+    return subprocess.call(*args, **kwargs)
 
 
 def check_output(*args, **kwargs):
@@ -148,7 +149,8 @@ def check_output(*args, **kwargs):
         kwargs['env'] = normalize_env(kwargs['env'])
     # we have to use shell=True in order to get PATH handling
     # when looking for the binary on Windows
-    return subprocess.check_output(*args, shell=sys.platform == 'win32', **kwargs)
+    kwargs.setdefault("shell", sys.platform == "win32")
+    return subprocess.check_output(*args, **kwargs)
 
 
 def check_call(*args, **kwargs):
@@ -164,7 +166,8 @@ def check_call(*args, **kwargs):
         print(' '.join(args[0]))
     # we have to use shell=True in order to get PATH handling
     # when looking for the binary on Windows
-    proc = subprocess.Popen(*args, shell=sys.platform == 'win32', **kwargs)
+    kwargs.setdefault("shell", sys.platform == "win32")
+    proc = subprocess.Popen(*args, **kwargs)
     status = None
     # Leave it to the subprocess to handle Ctrl+C. If it terminates as
     # a result of Ctrl+C, proc.wait() will return a status code, and,
@@ -322,9 +325,11 @@ class CommandBase(object):
         if self.config["tools"]["use-rustup"]:
             try:
                 kwargs.setdefault("env", {})["RUSTUP_TOOLCHAIN"] = self.toolchain()
-                return call(args, executable="rustup" + BIN_SUFFIX, **kwargs)
+                return call(args, executable="rustup" + BIN_SUFFIX, shell=False, **kwargs)
             except OSError as e:
                 if e.errno == NO_SUCH_FILE_OR_DIRECTORY:
+                    print repr(e)
+                    print
                     print "It looks like rustup is not installed. See instructions at " \
                           "https://github.com/servo/servo/#setting-up-your-environment"
                     print
