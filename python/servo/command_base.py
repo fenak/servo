@@ -14,7 +14,6 @@ import itertools
 import locale
 import os
 from os import path
-import re
 import contextlib
 import subprocess
 from subprocess import PIPE
